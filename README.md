@@ -1,2 +1,2 @@
 # MotivationalQuotes
-Shows motivational quotes
+Shows motivational quotes on your desktop. 2 minute timer.
