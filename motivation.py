@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide2 import QtWidgets
 from PySide2.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PySide2.QtGui import QPalette, QColor, QFont
-from PySide2.QtCore import Qt, QPoint, QTimer
+from PySide2.QtGui import QFont
+from PySide2.QtCore import Qt, QPoint
 import sys
-from random import choice
+from random import randint
+import requests
+from bs4 import BeautifulSoup
 
 
 class NewWidget(QWidget):
@@ -20,24 +22,14 @@ class NewWidget(QWidget):
         self.label.setFont(self.font)
         self.label.setStyleSheet("color: #EBE75C")
 
+        self.chars = 250
 
-        self.quotes = ["Believe in yourself!",
-                       "Have faith in your abilities!",
-                       "If you can dream it, you can do it.",
-                       "Press forward, do not stop, do not linger in your journey, but strive for the mark you set before you.",
-                       "Aim for the moon. If you miss, you may hit a star.",
-                       "Don't watch the clock; do what it does. Keep going.",
-                       "We aim above the mark to hit the mark.",
-                       "Change your life today, don't gamble on the future.",
-                       "You just can't beat the person who never gives up.",
-                       "Never give up.",
-                       "Opportunities don't happen, you create them.",
-                       "If you're going through hell, keep going.",
-                       "No masterpiece was ever created by a lazy artist.",
-                       "Do one thing every day that scares you.",
-                       "The starting point of all achievements is desire.",
-                       "It's better to fail in originality than succeed in imitation.",
-                       "Failure is the condiment that gives success it's flavor."]
+        self.quotes = []
+        self.page = randint(1, 10)
+        print(self.page)
+        self.url = "http://quotes.toscrape.com/page/1/"
+        self.response = requests.get(self.url)
+        self.soup = BeautifulSoup(self.response.text, "html.parser")
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.label)
@@ -51,18 +43,35 @@ class NewWidget(QWidget):
         self.m_nMouseClick_Y_Coordinate = None
         self.oldPos = self.pos()
 
-        self.valik = choice(self.quotes)
-        self.label.setText(self.valik)
+        self.uus = self.choose()
+        self.label.setText(self.uus)
         self.startTimer(1000 * 60 * 60)
 
-    def timerEvent(self, event):
-        self.uus = choice(self.quotes)
-        if self.uus == self.valik:
-            self.timerEvent(event)
+    def choose(self):
+        for quote in self.soup.find_all("span", {"class": "text"}):
+            if quote.text in self.quotes:
+                pass
+            else:
+                if len(quote.text) > self.chars:
+                    self.quotes.append(quote.text)
+                    return self.choose()
+                self.quotes.append(quote.text)
+                return quote.text
+
+        print(10000)
+        if self.page == 10:
+            self.page = 1
         else:
-            self.valik = self.uus
-            self.label.setText(self.valik)
-            return
+            self.page += 1
+        self.url = "http://quotes.toscrape.com/page/{}/".format(str(self.page))
+        self.response = requests.get(self.url)
+        self.soup = BeautifulSoup(self.response.text, "html.parser")
+        return self.choose()
+
+    def timerEvent(self, event):
+        self.uus = self.choose()
+        self.label.setText(self.uus)
+        return
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
