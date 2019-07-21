@@ -53,7 +53,7 @@ class NewWidget(QWidget):
 
         self.valik = choice(self.quotes)
         self.label.setText(self.valik)
-        self.startTimer(180000)
+        self.startTimer(1000 * 60 * 60)
 
     def timerEvent(self, event):
         self.uus = choice(self.quotes)
