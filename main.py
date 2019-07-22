@@ -46,8 +46,8 @@ class NewWidget(QWidget):
         self.author = ""
         self.uus = self.choose()
         self.label.setText(self.uus + "\n - " + self.author)
-        #self.startTimer(1000 * 60 * 60)
-        self.startTimer(5000)
+        self.startTimer(1000 * 60 * 60)
+        #self.startTimer(5000)
 
     def choose(self):
         for quote in self.soup.find_all("span", {"class": "text"}):
