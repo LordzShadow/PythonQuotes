@@ -27,7 +27,7 @@ class NewWidget(QWidget):
         self.quotes = []
         self.page = randint(1, 10)
         print(self.page)
-        self.url = "http://quotes.toscrape.com/page/1/"
+        self.url = "http://quotes.toscrape.com/page/{}/".format(self.page)
         self.response = requests.get(self.url)
         self.soup = BeautifulSoup(self.response.text, "html.parser")
 
@@ -36,16 +36,18 @@ class NewWidget(QWidget):
         self.setAttribute(Qt.WA_NoSystemBackground, True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.flags = QtWidgets
-        self.setWindowFlags(Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint|Qt.WindowCloseButtonHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnBottomHint | Qt.WindowCloseButtonHint)
         self.setLayout(self.layout)
 
         self.m_nMouseClick_X_Coordinate = None
         self.m_nMouseClick_Y_Coordinate = None
         self.oldPos = self.pos()
 
+        self.author = ""
         self.uus = self.choose()
-        self.label.setText(self.uus)
-        self.startTimer(1000 * 60 * 60)
+        self.label.setText(self.uus + "\n - " + self.author)
+        #self.startTimer(1000 * 60 * 60)
+        self.startTimer(5000)
 
     def choose(self):
         for quote in self.soup.find_all("span", {"class": "text"}):
@@ -56,6 +58,8 @@ class NewWidget(QWidget):
                     self.quotes.append(quote.text)
                     return self.choose()
                 self.quotes.append(quote.text)
+                author = quote.parent.findChild("small", {"class": "author"})
+                self.author = author.text
                 return quote.text
 
         print(10000)
@@ -70,7 +74,7 @@ class NewWidget(QWidget):
 
     def timerEvent(self, event):
         self.uus = self.choose()
-        self.label.setText(self.uus)
+        self.label.setText(self.uus + "\n - " + self.author)
         return
 
     def mousePressEvent(self, event):
@@ -82,12 +86,14 @@ class NewWidget(QWidget):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
 
     widget = NewWidget()
     widget.resize(200, 100)
     widget.show()
+    widget.move(0, widget.maximumHeight())
     widget.setWindowTitle("Motivational quotes")
 
     sys.exit(app.exec_())
